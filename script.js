@@ -3,19 +3,19 @@ $(document).ready(function (){
     getButtons();
 });
 
-var maxCols = 33;
-var maxRows = 33;
+let maxCols = 33;
+let maxRows = 33;
 
 function buildGrid(){
 
-    for(var i = 0; i < maxRows; i++)
+    for(let i = 0; i < maxRows; i++)
     {
-        for(var j = 0; j < maxCols; j++)
+        for(let j = 0; j < maxCols; j++)
         {
-            var div = document.createElement("div");
+            let div = document.createElement("div");
             div.id= "" + i + "" + j + "";
-            var colString = "grid-column: " + (j + 1);
-            var rowString = "grid-row: " + (i + 1);
+            let colString = "grid-column: " + (j + 1);
+            let rowString = "grid-row: " + (i + 1);
             div.setAttribute("class", "inner-block"); 
             if(i == 0 || j == 0 || i == maxRows - 1 || j == maxCols - 1)
             {
@@ -28,18 +28,18 @@ function buildGrid(){
     }
 }
 
-var buttons = [];
-var currentButton = null;
+let buttons = [];
+let currentButton = null;
 
 function getButtons()
 {
-    for(var i = 0; i < maxRows; i++)
+    for(let i = 0; i < maxRows; i++)
     {
-        for(var j = 0; j < maxCols; j++)
+        for(let j = 0; j < maxCols; j++)
         {
-            var colString = "" + i;
-            var rowString = "" + j;
-            var div = document.getElementById(colString + rowString);
+            let colString = "" + i;
+            let rowString = "" + j;
+            let div = document.getElementById(colString + rowString);
             buttons.push(div);
         }
     }
@@ -48,9 +48,9 @@ function getButtons()
 
 function addButtonListeners()
 {
-    for(var i = 0; i < buttons.length; i++)
+    for(let i = 0; i < buttons.length; i++)
     {
-        var buttonString = "" + buttons[i].id;
+        let buttonString = "" + buttons[i].id;
         document.getElementById(buttonString).addEventListener("click", function(){
             currentButton = buttonString;
             console.log("Button " + currentButton + " pushed");
