@@ -209,7 +209,7 @@ async function createPath()
         // TODO: detect when route is at the end
         const theButton = await waitForNextButton();
         console.log("theButton " + theButton); 
-        if(document.getElementById(theButton).className == "inner-block")
+        if(document.getElementById(theButton).className == "inner-block" || theButton == endingButton)
         {
             let i = theButton.substr(0, theButton.indexOf("-"));
             let j = theButton.substr(theButton.indexOf("-") + 1, theButton.length);
@@ -219,9 +219,14 @@ async function createPath()
             if(isNextTo(i, j, k, l))
             {
                 console.log("correct");
-                document.getElementById(lastButton).style.backgroundColor = "blue";
-                document.getElementById(lastButton).setAttribute("class", "path-block");
+                document.getElementById(theButton).style.backgroundColor = "blue";
+                document.getElementById(theButton).setAttribute("class", "path-block");
                 lastButton = theButton;
+                if(theButton == endingButton)
+                {
+                    pathComplete = true;
+                    console.log("path done");
+                }
             }
             else
             {
