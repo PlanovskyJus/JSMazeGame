@@ -13,6 +13,10 @@ let currentButton = null;
 let startingButton = null;
 let endingButton = null;
 let pathComplete = false;
+let callWhenButtonPushed = null;
+let lastButton = null;
+let path = [];
+
 
 // Setup the grid in the display
     function buildGrid(){
@@ -79,6 +83,10 @@ let pathComplete = false;
             let buttonString = "" + buttons[i].id;
             document.getElementById(buttonString).addEventListener("click", function(){
                 currentButton = buttonString;
+                if(callWhenButtonPushed) {
+                    callWhenButtonPushed(buttonString);
+                    callWhenButtonPushed = null;
+                }
                 // console.log("Button " + currentButton + " pushed");
             });
         }
@@ -94,6 +102,8 @@ let pathComplete = false;
             // console.log("Got button " + currentButton);
             startingButton = currentButton;
             currentButton = null;
+            lastButton = startingButton;
+            path.push(lastButton);
             getEndingPoint(null);
         }
         else
@@ -183,62 +193,70 @@ let pathComplete = false;
     }
 // Get the ending button
 
-// Get the path from start to end
-async function createPath()
-{
-    getNextButton();
-    while(!pathComplete)
-    {
-        await getNextButton();
-    }
-    
-
-}
-
-function getNextButton()
-{
-    if(currentButton != null)
-    {
-        let r = currentButton;
-        currentButton = null;
-        console.log("R " + r);
-        return r;
-    }
-    else
-    {
-        currentButton = null;
-        waitForNextButton();
-    }
-}
-
 function waitForNextButton()
 {
-    if(currentButton == null) setTimeout(function() {waitForNextButton();});
-    else return doneWaitingNextButton();
+    return new Promise(resolve => {
+        callWhenButtonPushed = resolve;
+    });
 }
 
-function doneWaitingNextButton()
+// Create the path from start to finish
+async function createPath()
 {
-    let i = currentButton.substr(0, currentButton.indexOf("-"));
-    let j = currentButton.substr(currentButton.indexOf("-") + 1, currentButton.length);
-    let div = document.getElementById(currentButton);
-    if(div.className != "wall-block")
+    while(!pathComplete)
     {
-        console.log("This is not a wall block");
-        console.log("col = " + i);
-        console.log("row = " + j);
-        div.style.backgroundColor = "blue";
-        getNextButton(currentButton);
+        // TODO: validate that nextButton is next to the start or last path block
+        // TODO: detect when route is at the end
+        const theButton = await waitForNextButton();
+        console.log("theButton " + theButton); 
+        if(document.getElementById(theButton).className == "inner-block")
+        {
+            let i = theButton.substr(0, theButton.indexOf("-"));
+            let j = theButton.substr(theButton.indexOf("-") + 1, theButton.length);
+            console.log("last button " + lastButton);
+            let k = lastButton.substr(0, lastButton.indexOf("-"));
+            let l = lastButton.substr(lastButton.indexOf("-") + 1, lastButton.length);
+            if(isNextTo(i, j, k, l))
+            {
+                console.log("correct");
+                document.getElementById(lastButton).style.backgroundColor = "blue";
+                document.getElementById(lastButton).setAttribute("class", "path-block");
+                lastButton = theButton;
+            }
+            else
+            {
+                console.log("wrong");
+            }
+
+        }
+    }
+}
+
+function isNextTo(i, j, k, l)
+{
+    i = parseInt(i);
+    j = parseInt(j);
+    k = parseInt(k);
+    l = parseInt(l);
+
+    if(k == i + 1 && j == l)
+    {
+        return true;
+    }
+    else if(k == i - 1 && j == l)
+    {
+        return true;
+    }
+    else if(j == l - 1 && k == i)
+    {
+        return true;
+    }
+    else if(j == l + 1 && k == i)
+    {
+        return true;
     }
     else
     {
-        console.log("This is wall");
-        currentButton = null;
-        getNextButton();
+        return false;
     }
-}
-
-function isConnectedPath()
-{
-
 }
