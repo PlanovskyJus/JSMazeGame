@@ -2,6 +2,7 @@ $(document).ready(function (){
     buildGrid();
     getButtons();
     getStartingPoint();
+    document.getElementById("upload").addEventListener("change", loadFile, false);
 
 });
 
@@ -59,209 +60,329 @@ let path = [];
     }
 // Setup the grid in the display
 
+// Getting the starting and ending blocks
 
-// Setup each tile as a button with a unique id
-    function getButtons()
-    {
-        for(let i = 0; i < maxRows; i++)
+    // Setup each tile as a button with a unique id and listener
+        function getButtons()
         {
-            for(let j = 0; j < maxCols; j++)
+            for(let i = 0; i < maxRows; i++)
             {
-                let colString = "" + i;
-                let rowString = "" + j;
-                let div = document.getElementById(colString + "-" + rowString);
-                buttons.push(div);
+                for(let j = 0; j < maxCols; j++)
+                {
+                    let colString = "" + i;
+                    let rowString = "" + j;
+                    let div = document.getElementById(colString + "-" + rowString);
+                    buttons.push(div);
+                }
+            }
+            addButtonListeners();
+        }
+
+        function addButtonListeners()
+        {
+            for(let i = 0; i < buttons.length; i++)
+            {
+                let buttonString = "" + buttons[i].id;
+                document.getElementById(buttonString).addEventListener("click", function(){
+                    currentButton = buttonString;
+                    if(callWhenButtonPushed) {
+                        callWhenButtonPushed(buttonString);
+                        callWhenButtonPushed = null;
+                    }
+                    // console.log("Button " + currentButton + " pushed");
+                });
             }
         }
-        addButtonListeners();
-    }
+    // Setup each tile as a button with a unique id and listener
 
-    function addButtonListeners()
-    {
-        for(let i = 0; i < buttons.length; i++)
+    // Get the starting button;
+        function getStartingPoint()
         {
-            let buttonString = "" + buttons[i].id;
-            document.getElementById(buttonString).addEventListener("click", function(){
-                currentButton = buttonString;
-                if(callWhenButtonPushed) {
-                    callWhenButtonPushed(buttonString);
-                    callWhenButtonPushed = null;
-                }
-                // console.log("Button " + currentButton + " pushed");
-            });
-        }
-    }
-// Setup each tile as a button with a unique id
-
-// Get the starting button;
-    function getStartingPoint()
-    {
-        // console.log("getting starting point");
-        if(currentButton != null)
-        {
-            // console.log("Got button " + currentButton);
-            startingButton = currentButton;
-            currentButton = null;
-            lastButton = startingButton;
-            path.push(lastButton);
-            getEndingPoint(null);
-        }
-        else
-        {
-            // console.log("got null starting point");
-            currentButton = null;
-            waitForButtonStart();
-        }
-    }
-
-    function waitForButtonStart()
-    {
-        if(currentButton == null) setTimeout(function() {console.log("Waiting..."); waitForButtonStart()}, 200);
-        else return doneWaitingForStart();
-    }
-
-    // Button was pushed, now detect if it was valid
-    function doneWaitingForStart()
-    {
-        // console.log("Button pushed + " + currentButton);
-        let i = currentButton.substr(0, currentButton.indexOf("-"));
-        let j = currentButton.substr(currentButton.indexOf("-") + 1, currentButton.length);
-        let div = document.getElementById(currentButton);
-        if(div.className == "edge-block")
-        {
-            // console.log("This is valid edge block");
-            // console.log("col = " + i);
-            // console.log("row = " + j);
-            div.style.backgroundColor = "red";
-            getStartingPoint(currentButton);
-        }
-        else
-        {
-            // console.log("This is not edge");
-            currentButton = null;
-            getStartingPoint();
-        }
-    }
-// Get the starting button
-
-// Get the ending button
-    function getEndingPoint()
-    {
-        // console.log("getting ending point");
-        if(currentButton != null)
-        {
-            // console.log("Got button " + currentButton);
-            endingButton = currentButton;
-            currentButton = null;
-            createPath();
-        }
-        else
-        {
-            // console.log("got null ending point");
-            currentButton = null;
-            waitForButtonEnd();
-        }
-    }
-
-    function waitForButtonEnd()
-    {
-        if(currentButton == null) setTimeout(function() {console.log("Waiting..."); waitForButtonEnd()}, 200);
-        else return doneWaitingForEnd();
-    }
-
-    // Button was pushed, now detect if it was valid
-    function doneWaitingForEnd()
-    {
-        // console.log("Button pushed + " + currentButton);
-        let i = currentButton.substr(0, currentButton.indexOf("-"));
-        let j = currentButton.substr(currentButton.indexOf("-") + 1, currentButton.length);
-        let div = document.getElementById(currentButton);
-        if(div.className == "edge-block")
-        {
-            // console.log("This is valid edge block");
-            // console.log("col = " + i);
-            // console.log("row = " + j);
-            div.style.backgroundColor = "red";
-            getEndingPoint(currentButton);
-        }
-        else
-        {
-            // console.log("This is not edge");
-            currentButton = null;
-            getEndingPoint();
-        }
-    }
-// Get the ending button
-
-function waitForNextButton()
-{
-    return new Promise(resolve => {
-        callWhenButtonPushed = resolve;
-    });
-}
-
-// Create the path from start to finish
-async function createPath()
-{
-    while(!pathComplete)
-    {
-        // TODO: validate that nextButton is next to the start or last path block
-        // TODO: detect when route is at the end
-        const theButton = await waitForNextButton();
-        console.log("theButton " + theButton); 
-        if(document.getElementById(theButton).className == "inner-block" || theButton == endingButton)
-        {
-            let i = theButton.substr(0, theButton.indexOf("-"));
-            let j = theButton.substr(theButton.indexOf("-") + 1, theButton.length);
-            console.log("last button " + lastButton);
-            let k = lastButton.substr(0, lastButton.indexOf("-"));
-            let l = lastButton.substr(lastButton.indexOf("-") + 1, lastButton.length);
-            if(isNextTo(i, j, k, l))
+            // console.log("getting starting point");
+            if(currentButton != null)
             {
-                console.log("correct");
-                document.getElementById(theButton).style.backgroundColor = "blue";
-                document.getElementById(theButton).setAttribute("class", "path-block");
-                lastButton = theButton;
-                if(theButton == endingButton)
-                {
-                    pathComplete = true;
-                    console.log("path done");
-                }
+                // console.log("Got button " + currentButton);
+                startingButton = currentButton;
+                currentButton = null;
+                lastButton = startingButton;
+                path.push(lastButton);
+                getEndingPoint(null);
             }
             else
             {
-                console.log("wrong");
+                // console.log("got null starting point");
+                currentButton = null;
+                waitForButtonStart();
             }
-
         }
-    }
-}
 
-function isNextTo(i, j, k, l)
-{
-    i = parseInt(i);
-    j = parseInt(j);
-    k = parseInt(k);
-    l = parseInt(l);
+        function waitForButtonStart()
+        {
+            if(currentButton == null) setTimeout(function() {console.log("Waiting..."); waitForButtonStart()}, 200);
+            else return doneWaitingForStart();
+        }
 
-    if(k == i + 1 && j == l)
+        // Button was pushed, now detect if it was valid
+        function doneWaitingForStart()
+        {
+            // console.log("Button pushed + " + currentButton);
+            let i = currentButton.substr(0, currentButton.indexOf("-"));
+            let j = currentButton.substr(currentButton.indexOf("-") + 1, currentButton.length);
+            let div = document.getElementById(currentButton);
+            if(div.className == "edge-block")
+            {
+                // console.log("This is valid edge block");
+                // console.log("col = " + i);
+                // console.log("row = " + j);
+                div.style.backgroundColor = "red";
+                getStartingPoint(currentButton);
+            }
+            else
+            {
+                // console.log("This is not edge");
+                currentButton = null;
+                getStartingPoint();
+            }
+        }
+    // Get the starting button
+
+    // Get the ending button
+        function getEndingPoint()
+        {
+            // console.log("getting ending point");
+            if(currentButton != null)
+            {
+                // console.log("Got button " + currentButton);
+                endingButton = currentButton;
+                currentButton = null;
+                createPath();
+            }
+            else
+            {
+                // console.log("got null ending point");
+                currentButton = null;
+                waitForButtonEnd();
+            }
+        }
+
+        function waitForButtonEnd()
+        {
+            if(currentButton == null) setTimeout(function() {console.log("Waiting..."); waitForButtonEnd()}, 200);
+            else return doneWaitingForEnd();
+        }
+
+        // Button was pushed, now detect if it was valid
+        function doneWaitingForEnd()
+        {
+            // console.log("Button pushed + " + currentButton);
+            let i = currentButton.substr(0, currentButton.indexOf("-"));
+            let j = currentButton.substr(currentButton.indexOf("-") + 1, currentButton.length);
+            let div = document.getElementById(currentButton);
+            if(div.className == "edge-block")
+            {
+                // console.log("This is valid edge block");
+                // console.log("col = " + i);
+                // console.log("row = " + j);
+                div.style.backgroundColor = "red";
+                getEndingPoint(currentButton);
+            }
+            else
+            {
+                // console.log("This is not edge");
+                currentButton = null;
+                getEndingPoint();
+            }
+        }
+    // Get the ending button
+
+// Getting the starting and ending blocks
+
+// Helper function to get the button pushed
+    function waitForNextButton()
     {
-        return true;
+        return new Promise(resolve => {
+            callWhenButtonPushed = resolve;
+        });
     }
-    else if(k == i - 1 && j == l)
+// Helper function to get the button pushed
+
+// Create the complete maze path
+
+    // Create the path from start to finish
+        async function createPath()
+        {
+            // Add the first and last spot to the path.
+            path.push(endingButton);
+
+            while(!pathComplete)
+            {
+                const theButton = await waitForNextButton();
+                console.log("theButton " + theButton); 
+                if(document.getElementById(theButton).className == "inner-block" || theButton == endingButton)
+                {
+                    // i and j are the position of the currently pressed button
+                    let i = theButton.substr(0, theButton.indexOf("-"));
+                    let j = theButton.substr(theButton.indexOf("-") + 1, theButton.length);
+                    console.log("last button " + lastButton);
+                    // k and l are the position of the last pressed button, or start on first runthrough 
+                    let k = lastButton.substr(0, lastButton.indexOf("-"));
+                    let l = lastButton.substr(lastButton.indexOf("-") + 1, lastButton.length);
+                    if(isNextTo(i, j, k, l))
+                    {
+                        console.log("correct");
+                        // Set blocks style to indicate it is a path-block
+                        document.getElementById(theButton).style.backgroundColor = "blue";
+                        document.getElementById(theButton).setAttribute("class", "path-block");
+                        // Add block to path
+                        path.push(theButton);
+                        // Update last visited position
+                        lastButton = theButton;
+                        if(theButton == endingButton)
+                        {
+                            pathComplete = true;
+                            console.log("path done");                    
+                            // At the end here, the path is: [start, end, path to end, end]
+                        }
+                    }
+                    else
+                    {
+                        // TODO: Alert the user that that block is not valid
+                        console.log("wrong");
+                    }
+                }
+            }
+            // User then must create paths that do not lead to the finish
+            createOffshoots();
+        }
+    // Create the path from start to finish
+
+    // Allow the user to create paths that do not lead to the finish
+        async function createOffshoots()
+        {
+            pathComplete = false;
+            let lastBlock = path[1];
+            console.log("starting offshoots");
+            while(!pathComplete)
+            {
+                const theButton = await waitForNextButton();
+                // Validate that this is an offshoot block
+                // Offshoot blocks cannot: be a path block, be next to 2 path blocks, 
+                // Will need to loop through every block in the path to validate
+                let nextTo = 0;
+                // i and j are the position of the currently pressed button
+                let i = theButton.substr(0, theButton.indexOf("-"));
+                let j = theButton.substr(theButton.indexOf("-") + 1, theButton.length);
+                let lastA = lastBlock.substr(0, lastBlock.indexOf("-"));
+                let lastB = lastBlock.substr(lastBlock.indexOf("-") + 1, lastBlock.length);
+                // User must click the ending block to end creating offshoots
+                if(i == lastA && j == lastB)
+                {
+                    console.log("ending offshoots");
+                    pathComplete = true;
+                    saveCurrentLevel(path, "pathName");
+                    break;
+                }
+                // Find out how many path blocks this button is next to
+                for(let a = 0; a < path.length; a++)
+                {
+                    let pathBlock = path[a];
+                    let k = pathBlock.substr(0, pathBlock.indexOf("-"));
+                    let l = pathBlock.substr(pathBlock.indexOf("-") + 1, pathBlock.length);
+                    console.log("k " + k);
+                    console.log("l " + l);
+                    if(isNextTo(i, j, k, l))
+                    {
+                        nextTo += 1;
+                    }
+                }
+                // If the block isnt next to only 1 path block, its invalid
+                if(nextTo != 1)
+                {
+                    // Invalid selection for a path block
+                }
+                else
+                {
+                    console.log("correct");
+                    // Set blocks style to indicate it is a path-block
+                    document.getElementById(theButton).style.backgroundColor = "blue";
+                    document.getElementById(theButton).setAttribute("class", "path-block");
+                    // Add block to path
+                    path.push(theButton);
+                }
+
+            }
+        }
+    // Allow the user to create paths that do not lead to the finish
+
+    // Use this to determine if the button pushed is left, right, up, or down by 1 from the previous block
+        function isNextTo(i, j, k, l)
+        {
+            i = parseInt(i);
+            j = parseInt(j);
+            k = parseInt(k);
+            l = parseInt(l);
+
+            if(k == i + 1 && j == l)
+            {
+                return true;
+            }
+            else if(k == i - 1 && j == l)
+            {
+                return true;
+            }
+            else if(j == l - 1 && k == i)
+            {
+                return true;
+            }
+            else if(j == l + 1 && k == i)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    // Use this to determine if the button pushed is left, right, up, or down by 1 from the previous block
+
+    // Save current path to a file
+        function saveCurrentLevel(path, levelName)
+        {
+            let file = new Blob([path], {type: "text/plain"});
+            let a = document.createElement("a");
+            let url = URL.createObjectURL(file);
+            a.href = url;
+            a.download = levelName;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function() {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 0);
+        }
+    // Save current path to a file
+
+// Create the complete maze path
+
+
+// Load previously created path
+    function loadFile(event)
     {
-        return true;
+        console.log("loading files");
+        let files = event.target.files; // Filelist object
+
+        let f = files[0];
+
+        let reader = new FileReader();
+
+        reader.onload = (function(theFile) {
+            return function(e) {
+                // Load the path from here, then create the path on the board
+                console.log(e.target.result);
+                };
+                
+            })(f);
+
+        reader.readAsText(f);
     }
-    else if(j == l - 1 && k == i)
-    {
-        return true;
-    }
-    else if(j == l + 1 && k == i)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
+// Load previously created path

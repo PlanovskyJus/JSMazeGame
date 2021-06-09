@@ -54,6 +54,11 @@ body{
     grid-template-rows: repeat(33, 20px);
 }
 
+#upload-grid{
+    grid-row: 3;
+    grid-column: 1;
+}
+
 .wall-block{
     background-color: darkslategray !important;
     border: 1px solid black;
