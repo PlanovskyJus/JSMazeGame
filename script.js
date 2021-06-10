@@ -32,6 +32,7 @@ function startCreation()
 // Setup the grid in the display
     function buildGrid(){
 
+        // Create a grid that has walls around the edge and blocks with different classes to denote different types
         for(let i = 0; i < maxRows; i++)
         {
             for(let j = 0; j < maxCols; j++)
@@ -73,6 +74,7 @@ function startCreation()
 // Getting the starting and ending blocks and setup buttons
 
     // Setup each tile as a button with a unique id and listener
+        // For each element with an id that belongs to the grid, add it to a list of buttons and add a listener to it 
         function getButtons()
         {
             for(let i = 0; i < maxRows; i++)
@@ -88,6 +90,7 @@ function startCreation()
             addButtonListeners();
         }
 
+        // Give each element an event listener
         function addButtonListeners()
         {
             for(let i = 0; i < buttons.length; i++)
@@ -105,6 +108,7 @@ function startCreation()
         }
     // Setup each tile as a button with a unique id and listener
 
+    // Getting the starting and ending buttons is not optimal but it works great
     // Get the starting button;
         function getStartingPoint()
         {
@@ -261,7 +265,6 @@ function startCreation()
                     }
                     else
                     {
-                        // TODO: Alert the user that that block is not valid
                         alert("Invalid position, must be connected to the path");
                         console.log("wrong");
                     }
@@ -323,7 +326,11 @@ function startCreation()
                     // Invalid selection for a path block
                     alert("Invalid position, cannot touch more than one path block");
                 }
-                else
+                else if (theButton.className == "path-block")
+                {
+                    alert("cannot add path block to path twice");
+                }
+                else 
                 {
                     console.log("correct");
                     // Set blocks style to indicate it is a path-block
@@ -407,6 +414,11 @@ function startCreation()
                 
                 let newPath = e.target.result.split(",");
                 console.log(newPath);
+                // Create the maze from provided path
+                startingButton = newPath[0];
+                endingButton = newPath[1];
+                newPath = shuffle(newPath);
+                
                 loadPath(newPath);
                 };
                 
@@ -415,21 +427,43 @@ function startCreation()
         reader.readAsText(f);
     }
 
+    function shuffle(array) {
+        var currentIndex = array.length,  randomIndex;
+      
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+      
+          // Pick a remaining element...
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex--;
+      
+          // And swap it with the current element.
+          [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+        }
+      
+        return array;
+      }
+      
+
     async function loadPath(newPath)
     {
         $("#body-grid").show();
         $("#upload-grid").hide();
+        $("#talking-point").html("Lets play! Use arrow keys to move");
+        // Set the styles of path blocks to indicate type
         for(let i = newPath.length - 1; i >= 0; i--)
         {
             document.getElementById(newPath[i]).setAttribute("class", "path-block")
 
-            await new Promise(r => setTimeout(r, 50));
+            await new Promise(r => setTimeout(r, 10));
             
         }
-        document.getElementById(newPath[0]).setAttribute("class", "start-end-block");
-        document.getElementById(newPath[1]).setAttribute("class", "start-end-block");
+        // Setup starting and ending blocks as unique
+        document.getElementById(startingButton).setAttribute("class", "start-end-block");
+        document.getElementById(endingButton).setAttribute("class", "start-end-block");
         path = newPath;
-        setupCharacter();
+        playGame();
 
     }
 // Load previously created path
@@ -454,15 +488,14 @@ function startCreation()
     // Test that movement goes along the path
         async function tryMovement(keyCode)
         {
-            console.log("trying movement");
-            console.log("cur button " + currentButton);
+            // console.log("trying movement");
+            // console.log("cur button " + currentButton);
             let i = currentButton.substr(0, currentButton.indexOf("-"));
             let j = currentButton.substr(currentButton.indexOf("-") + 1, currentButton.length);
             if(keyCode == '40')
             {
                 // down
                 i++;
-                console.log("down try");
             }
             else if(keyCode == '38')
             {
@@ -481,25 +514,24 @@ function startCreation()
             }
 
             let nextBlock = i + "-" + j;
-            console.log("nextBlock = " + nextBlock);
-            console.log("currentBlock = " + currentButton);
+            // console.log("nextBlock = " + nextBlock);
+            // console.log("currentBlock = " + currentButton);
             if(isPathBlock(nextBlock))
             {
                 console.log("it is a path block");
                 document.getElementById(currentButton).innerHTML = "";
                 document.getElementById(nextBlock).innerHTML = "♦";
+                // console.log("next block is " + nextBlock);
                 currentButton = nextBlock;
-                console.log("now current " + currentButton);
+                // console.log("now current " + currentButton);
                 
                 if(testEnd())
                 {
+                    $("#talking-point").html("Game over, you win!");
                     gameInProgress = false;
                 }
-                
             }
-            
             // else wait for next arrow input
-            
         }
 
         function isPathBlock(block)
@@ -516,25 +548,25 @@ function startCreation()
     // Test that movement goes along the path
 
     // Move character from block to block
-        // Setup character
-            async function setupCharacter()
+        // Play the game
+            async function playGame()
             {
-                document.getElementById(path[0]).innerHTML = "♦";
-                currentButton = path[0];
+                // Set starting point with inidcator of current position
+                document.getElementById(startingButton).innerHTML = "♦";
+                currentButton = startingButton;
                 while(gameInProgress)
                 {
+                    // This handles detecting input, and updating position
+                    console.log("game in progress: cur button = " + currentButton);
                     await waitKeyPress();
                 }
             }
-        // Setup character
+        // Play the game
 
         // Test if character is at the end
             function testEnd()
             {
-                if(currentButton = path[1])
-                {
-                    // Game over, win
-                }
+                return currentButton == endingButton;
             }
         // Test if character is at the end
         
