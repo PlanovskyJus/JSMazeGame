@@ -1,7 +1,7 @@
 $(document).ready(function (){
     buildGrid();
-    getButtons();
-    getStartingPoint();
+    $("#body-grid").hide();
+    $("#upload-grid").hide();
     document.getElementById("upload").addEventListener("change", loadFile, false);
 
 });
@@ -17,6 +17,16 @@ let pathComplete = false;
 let callWhenButtonPushed = null;
 let lastButton = null;
 let path = [];
+let gameInProgress = true;
+
+function startCreation()
+{
+    $("#buttons").hide();
+    $("#body-grid").show();
+    getButtons();
+    getStartingPoint();
+    $("#talking-point").html("Click the enter point of your maze");
+}
 
 
 // Setup the grid in the display
@@ -60,7 +70,7 @@ let path = [];
     }
 // Setup the grid in the display
 
-// Getting the starting and ending blocks
+// Getting the starting and ending blocks and setup buttons
 
     // Setup each tile as a button with a unique id and listener
         function getButtons()
@@ -140,6 +150,7 @@ let path = [];
             else
             {
                 // console.log("This is not edge");
+                alert("Block must be on the edge");
                 currentButton = null;
                 getStartingPoint();
             }
@@ -149,6 +160,7 @@ let path = [];
     // Get the ending button
         function getEndingPoint()
         {
+            $("#talking-point").html("Click the exit point of your maze");
             // console.log("getting ending point");
             if(currentButton != null)
             {
@@ -189,6 +201,7 @@ let path = [];
             else
             {
                 // console.log("This is not edge");
+                alert("Block must be on the edge");
                 currentButton = null;
                 getEndingPoint();
             }
@@ -211,6 +224,7 @@ let path = [];
     // Create the path from start to finish
         async function createPath()
         {
+            $("#talking-point").html("Create a path from start to finish");
             // Add the first and last spot to the path.
             path.push(endingButton);
 
@@ -240,15 +254,21 @@ let path = [];
                         if(theButton == endingButton)
                         {
                             pathComplete = true;
-                            console.log("path done");                    
+                            console.log("path done");    
+                            document.getElementById(theButton).style.backgroundColor = "red";                
                             // At the end here, the path is: [start, end, path to end, end]
                         }
                     }
                     else
                     {
                         // TODO: Alert the user that that block is not valid
+                        alert("Invalid position, must be connected to the path");
                         console.log("wrong");
                     }
+                }
+                else
+                {
+                    alert("Path cannot go along the edge");
                 }
             }
             // User then must create paths that do not lead to the finish
@@ -259,6 +279,7 @@ let path = [];
     // Allow the user to create paths that do not lead to the finish
         async function createOffshoots()
         {
+            $("#talking-point").html("Create paths that lead to dead ends, click the exit block to finish");
             pathComplete = false;
             let lastBlock = path[1];
             console.log("starting offshoots");
@@ -279,6 +300,7 @@ let path = [];
                 {
                     console.log("ending offshoots");
                     pathComplete = true;
+                    $("#talking-point").html("Save your maze! Refresh the page to load and play.");
                     saveCurrentLevel(path, "pathName");
                     break;
                 }
@@ -299,6 +321,7 @@ let path = [];
                 if(nextTo != 1)
                 {
                     // Invalid selection for a path block
+                    alert("Invalid position, cannot touch more than one path block");
                 }
                 else
                 {
@@ -368,6 +391,9 @@ let path = [];
 // Load previously created path
     function loadFile(event)
     {
+        $("#upload-grid").show();
+        $("#buttons").hide();
+        $("#talking-point").html("Upload a maze to begin");
         console.log("loading files");
         let files = event.target.files; // Filelist object
 
@@ -378,11 +404,139 @@ let path = [];
         reader.onload = (function(theFile) {
             return function(e) {
                 // Load the path from here, then create the path on the board
-                console.log(e.target.result);
+                
+                let newPath = e.target.result.split(",");
+                console.log(newPath);
+                loadPath(newPath);
                 };
                 
             })(f);
 
         reader.readAsText(f);
     }
+
+    async function loadPath(newPath)
+    {
+        $("#body-grid").show();
+        $("#upload-grid").hide();
+        for(let i = newPath.length - 1; i >= 0; i--)
+        {
+            document.getElementById(newPath[i]).setAttribute("class", "path-block")
+
+            await new Promise(r => setTimeout(r, 50));
+            
+        }
+        document.getElementById(newPath[0]).setAttribute("class", "start-end-block");
+        document.getElementById(newPath[1]).setAttribute("class", "start-end-block");
+        path = newPath;
+        setupCharacter();
+
+    }
 // Load previously created path
+
+// Game functionality
+    // Get arrow key inputs
+        function waitKeyPress()
+        {
+            return new Promise((resolve) => {
+                document.addEventListener('keydown', onKeyHandler);
+                function onKeyHandler(e) {
+                  if (e.keyCode == '38' || e.keyCode == '40' || e.keyCode == '37' || e.keyCode == '39') {
+                    document.removeEventListener('keydown', onKeyHandler);
+                    tryMovement(e.keyCode);
+                    resolve();
+                  }
+                }
+              });
+        }
+    // Get arrow key inputs
+
+    // Test that movement goes along the path
+        async function tryMovement(keyCode)
+        {
+            console.log("trying movement");
+            console.log("cur button " + currentButton);
+            let i = currentButton.substr(0, currentButton.indexOf("-"));
+            let j = currentButton.substr(currentButton.indexOf("-") + 1, currentButton.length);
+            if(keyCode == '40')
+            {
+                // down
+                i++;
+                console.log("down try");
+            }
+            else if(keyCode == '38')
+            {
+                // up
+                i--;
+            }
+            else if(keyCode == '37')
+            {
+                // left
+                j--;
+            }
+            else
+            {
+                // right
+                j++;
+            }
+
+            let nextBlock = i + "-" + j;
+            console.log("nextBlock = " + nextBlock);
+            console.log("currentBlock = " + currentButton);
+            if(isPathBlock(nextBlock))
+            {
+                console.log("it is a path block");
+                document.getElementById(currentButton).innerHTML = "";
+                document.getElementById(nextBlock).innerHTML = "♦";
+                currentButton = nextBlock;
+                console.log("now current " + currentButton);
+                
+                if(testEnd())
+                {
+                    gameInProgress = false;
+                }
+                
+            }
+            
+            // else wait for next arrow input
+            
+        }
+
+        function isPathBlock(block)
+        {
+            for(let i = 0; i < path.length; i++)
+            {
+                if(block == path[i])
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    // Test that movement goes along the path
+
+    // Move character from block to block
+        // Setup character
+            async function setupCharacter()
+            {
+                document.getElementById(path[0]).innerHTML = "♦";
+                currentButton = path[0];
+                while(gameInProgress)
+                {
+                    await waitKeyPress();
+                }
+            }
+        // Setup character
+
+        // Test if character is at the end
+            function testEnd()
+            {
+                if(currentButton = path[1])
+                {
+                    // Game over, win
+                }
+            }
+        // Test if character is at the end
+        
+    // Move character from block to block
+// Game functionality
