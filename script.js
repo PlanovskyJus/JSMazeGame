@@ -457,6 +457,7 @@ function startCreation()
         reader.readAsText(f);
     }
 
+    // Shuffle path input so display looks better
     function shuffle(array) {
         var currentIndex = array.length,  randomIndex;
       
@@ -476,6 +477,7 @@ function startCreation()
       }
       
 
+    // Start the layout of the given path
     async function loadPath(newPath)
     {
         $("#body-grid").show();
@@ -585,11 +587,14 @@ function startCreation()
         // Play the game
             async function playGame()
             {
+                // Reset the functionality on reset, this does nothing if on first run
                 $("#reset-area").hide();
                 $("#final-display").html("");
                 $("#name-display").show();
                 gameInProgress = true;
                 score = 0;
+                $("#scoreboard").html("Score: " + score);
+
                 // Set starting point with inidcator of current position
                 document.getElementById(startingButton).innerHTML = "♦";
                 currentButton = startingButton;
