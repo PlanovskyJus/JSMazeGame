@@ -20,8 +20,16 @@
                     </div>
                     <div id="buttons">
                         <input type="button" value="Build" onclick="startCreation()">
-                        <input type="button" value="Play" onclick="loadFile()">
+                        <input type="button" value="Play" onclick="loadUsername('')">
                     </div>
+                     <!-- Username input area -->
+                        <div id="name-grid">
+                            <label for="name-input">Username:</label>
+                            <input type="text" id="name-input" value=".">
+                            <input type="button" value="Submit!" onclick="loadUsername()">
+
+                        </div>
+                    <!-- Username input area -->
                     <!-- Upload area -->
                         <div id="upload-grid">
                             <form enctype="multipart/form-data">
@@ -29,6 +37,19 @@
                             </form>
                         </div>
                     <!-- Upload area -->
+                    <!-- Username display area -->
+                        <div id="name-display">
+                            <h4 id="username"></h4>
+                            <h4 id="scoreboard">Score: 0</h4>
+                        </div>
+                    <!-- Username display area -->
+                    <!-- Reset area -->
+                        <div id="reset-area">
+                            <h3 id="final-display"></h3>
+                            <input type="button" value="Reset" onclick="playGame()">
+                        </div>
+                    <!-- Reset area -->
+                   
                 </div>
             <!-- Top Grid -->
             <!-- Body Grid -->

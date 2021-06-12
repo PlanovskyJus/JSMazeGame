@@ -2,6 +2,9 @@ $(document).ready(function (){
     buildGrid();
     $("#body-grid").hide();
     $("#upload-grid").hide();
+    $("#name-grid").hide();
+    $("#name-display").hide();
+    $("#reset-area").hide();
     document.getElementById("upload").addEventListener("change", loadFile, false);
 
 });
@@ -18,6 +21,8 @@ let callWhenButtonPushed = null;
 let lastButton = null;
 let path = [];
 let gameInProgress = true;
+let username = '';
+let score = 0;
 
 function startCreation()
 {
@@ -394,14 +399,39 @@ function startCreation()
 
 // Create the complete maze path
 
+// Handle username input
+    function loadUsername()
+    {
+        $("#name-grid").show();
+        $("#buttons").hide();
+        $("#upload-grid").hide();
+        $("#talking-point").html("Insert a username");
+        let name = $("#name-input").val();
+        if(name.length >= 3 && name.length <= 20)
+        {
+            // Valid username
+            console.log("valid name");
+            username = name;
+            loadFile();
+        }
+        else
+        {
+            $("#talking-point").html("Insert a username between 3 and 20 characters");
+        }
+
+    }
+// Handle username input
 
 // Load previously created path
     function loadFile(event)
     {
         $("#upload-grid").show();
         $("#buttons").hide();
+        $("#name-grid").hide();
         $("#talking-point").html("Upload a maze to begin");
-        console.log("loading files");
+        // Reset this name input so on refresh page it asks again
+        $("#name-input").val("")
+        // console.log("loading files");
         let files = event.target.files; // Filelist object
 
         let f = files[0];
@@ -450,7 +480,9 @@ function startCreation()
     {
         $("#body-grid").show();
         $("#upload-grid").hide();
+        $("#name-display").show();
         $("#talking-point").html("Lets play! Use arrow keys to move");
+        $("#username").html("User: " + username);
         // Set the styles of path blocks to indicate type
         for(let i = newPath.length - 1; i >= 0; i--)
         {
@@ -478,6 +510,7 @@ function startCreation()
                   if (e.keyCode == '38' || e.keyCode == '40' || e.keyCode == '37' || e.keyCode == '39') {
                     document.removeEventListener('keydown', onKeyHandler);
                     tryMovement(e.keyCode);
+                    $("#scoreboard").html("Score: " + score);
                     resolve();
                   }
                 }
@@ -490,6 +523,7 @@ function startCreation()
         {
             // console.log("trying movement");
             // console.log("cur button " + currentButton);
+            score++;
             let i = currentButton.substr(0, currentButton.indexOf("-"));
             let j = currentButton.substr(currentButton.indexOf("-") + 1, currentButton.length);
             if(keyCode == '40')
@@ -551,6 +585,11 @@ function startCreation()
         // Play the game
             async function playGame()
             {
+                $("#reset-area").hide();
+                $("#final-display").html("");
+                $("#name-display").show();
+                gameInProgress = true;
+                score = 0;
                 // Set starting point with inidcator of current position
                 document.getElementById(startingButton).innerHTML = "♦";
                 currentButton = startingButton;
@@ -560,6 +599,10 @@ function startCreation()
                     console.log("game in progress: cur button = " + currentButton);
                     await waitKeyPress();
                 }
+                // Show reset button and announce final score
+                $("#name-display").hide()
+                $("#reset-area").show();
+                $("#final-display").html("Congrats " + username + " your score is " + score + " would you like to play again?");
             }
         // Play the game
 
