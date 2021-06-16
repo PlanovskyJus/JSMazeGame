@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Builder and Game</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+</head>
+<body>
+    <!-- Page grid -->
+        <div id="page-grid">
+            <!-- Top Grid -->
+                <div id="top-grid">
+                    <div id="talking-title">
+                        <h3 id="talking-point">Hello, would you like to build or play?</h3>
+                        <h3 id="talking-error"></h3>
+                    </div>
+                    <div id="buttons">
+                        <input type="button" value="Build" onclick="startCreation()">
+                        <input type="button" value="Play" onclick="loadUsername('')">
+                    </div>
+                     <!-- Username input area -->
+                        <div id="name-grid">
+                            <label for="name-input">Username:</label>
+                            <input type="text" id="name-input" value="">
+                            <input type="button" value="Submit!" onclick="loadUsername()">
+
+                        </div>
+                    <!-- Username input area -->
+                    <!-- Upload area -->
+                        <div id="upload-grid">
+                            <form enctype="multipart/form-data">
+                                <input id="upload" type=file   accept="text" name="files[]" size=30>
+                            </form>
+                        </div>
+                    <!-- Upload area -->
+                    <!-- Username display area -->
+                        <div id="name-display">
+                            <h4 id="username"></h4>
+                            <h4 id="scoreboard">Score: 0</h4>
+                        </div>
+                    <!-- Username display area -->
+                    <!-- Reset area -->
+                        <div id="reset-area">
+                            <h3 id="final-display"></h3>
+                            <input type="button" value="Reset" onclick="playGame()">
+                        </div>
+                    <!-- Reset area -->
+                   
+                </div>
+            <!-- Top Grid -->
+            <!-- Body Grid -->
+                
+                <div id="body-grid">
+                    <!-- This gets populated by the javascript -->
+                </div>
+            <!-- Body Grid -->
+            
+        </div>
+    <!-- Page grid -->
+    
+</body>
+</html>
