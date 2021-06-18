@@ -9,6 +9,7 @@
         $("#reset-area").hide();
         document.getElementById("upload").addEventListener("change", loadFile, false); // Add event listener to get when file is uploaded
 
+
     });
 // Document setup
 
@@ -460,7 +461,14 @@
             console.log("valid name");
             username = name;
             // If the username is valid, proceed
-            loadFile();
+            // loadFile();
+            // Hide and show respective grid elements for user instructions
+            $("#upload-grid").show();
+            $("#buttons").hide();
+            $("#name-grid").hide();
+            $("#talking-point").html("Upload a maze to begin");
+            // Reset this name input so on refresh page it asks again
+            $("#name-input").val("")
         }
         else
         {
@@ -473,22 +481,17 @@
 // Load previously created path
     function loadFile(event)
     {
-        // Hide and show respective grid elements for user instructions
-        $("#upload-grid").show();
-        $("#buttons").hide();
-        $("#name-grid").hide();
-        $("#talking-point").html("Upload a maze to begin");
-        // Reset this name input so on refresh page it asks again
-        $("#name-input").val("")
-        // console.log("loading files");
-        let files = event.target.files; // Filelist object
 
-        let f = files[0]; // The first and only file in the object
+
+        // console.log("loading files");
+        let files = event.target.files[0]; // Filelist object
+
+        //let f = files[0]; // The first and only file in the object
 
         let reader = new FileReader(); // Used to get the contents of the file
 
         // Read the contents of the file
-        reader.onload = (function(theFile) {
+        reader.onload = function(theFile) {
             return function(e) {
                 // Load the path from here, then create the path on the board
                 
@@ -505,9 +508,9 @@
                 loadPath(newPath);
             };
                 
-        })(f);
+        }(files);
 
-        reader.readAsText(f);
+        reader.readAsText(files);
     }
 
     // Shuffle path input so display looks better
